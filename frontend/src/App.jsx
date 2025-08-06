@@ -1,49 +1,52 @@
-import { useState } from 'react'
-import "./App.css"
-import axios from "axios"
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+import './App.css'
 
 function App() {
-  const [url, setUrl] = useState("")
+  const [url, setUrl] = useState('')
+  const [downloadUrl, setDownloadUrl] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const handleDownload = async () => {
-    if (!url) return alert("Please enter a valid youtube URL")
+    setLoading(true)
+    try {
+      const res = await axios.post('http://localhost:5000/download', { url })
+      setDownloadUrl(res.data.link)
+    } catch (err) {
+      alert("Failed to fetch download link")
+    }
+    setLoading(false)
+  }
 
-      try {
-        const response = await axios.post(
-          "http://localhost:5000/download", { url },
-          {
-            responseType: "blob"
-          }
-        )
+  useEffect(() => {
+    // Insert PropellerAds or other ad script
+    const script = document.createElement('script')
+    script.src = '//upgulpinon.com/1?z=YOUR_AD_ID'
+    script.async = true
+    document.getElementById('ad-container').appendChild(script)
+  }, [])
 
-        const blob = new Blob([response.data], { type: "video/mp4" });
-        const downloadUrl = window.URL.createObjectURL(blob)
-        const link = document.createElement("a")
-        link.href = downloadUrl
-        link.download = "video.mp4";
- 
-        document.body.appendChild(link)
-        link.click()
-        link.remove()
-      } catch (error) {
-        console.error("Donwload failed:", error)
-        alert("Failed to donwload video.")
-      }
-      }
   return (
-    <div className='App'>
-      <h1>Youtube Video Donwloader</h1>
-      <input type="text"
-       placeholder='Enter YouTube URL' 
-       value={url}
-       onChange={(e) => setUrl(e.target.value)}
-       />
+    <div className="container">
+      <h1>YouTube Downloader</h1>
+      <input
+        type="text"
+        placeholder="Paste YouTube video URL"
+        value={url}
+        onChange={(e) => setUrl(e.target.value)}
+      />
+      <button onClick={handleDownload} disabled={loading}>
+        {loading ? 'Processing...' : 'Get Download Link'}
+      </button>
 
-       <button onClick={handleDownload}>
-         Download
-       </button>
+      {downloadUrl && (
+        <div className="result">
+          <a href={downloadUrl} target="_blank">Download Video</a>
+        </div>
+      )}
+
+      <div id="ad-container" style={{ marginTop: '40px' }}></div>
     </div>
-
   )
 }
 
