@@ -12,6 +12,15 @@ function App() {
   return (
     <div className='App'>
       <h1>Youtube Video Donwloader</h1>
+      <input type="text"
+       placeholder='Enter YouTube URL' 
+       value={url}
+       onChange={(e) => setUrl(e.target.value)}
+       />
+
+       <button onClick={handleDownload}>
+         Download
+       </button>
     </div>
 
   )
