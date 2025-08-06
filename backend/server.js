@@ -1,30 +1,31 @@
-import express from "express"
-import cors from "cors"
-import ytdl from "ytdl-core"
+const express = require('express');
+const cors = require('cors');
+const ytdl = require('ytdl-core');
 
 const app = express();
-
 app.use(cors());
 app.use(express.json());
 
 app.post('/download', async (req, res) => {
-    const videoURL = req.body.url;
+  const { videoUrl } = req.body;
 
-    if (!ytdl.validateURL(videoURL)) {
-        return res.status(400).json({ error: "Invalid YouTube URL" });
-    }
+  if (!ytdl.validateURL(videoUrl)) {
+    return res.status(400).json({ error: 'Invalid YouTube URL' });
+  }
 
-    try {
-        const info = await ytdl.getInfo(videoURL);
-        const title = info.videoDetails.title.replace(/[^\w\s]/gi, "");
-        res.header("Content-Disposition", `attachment; filename="${title}.mp4"`);
+  try {
+    const info = await ytdl.getInfo(videoUrl);
+    const title = info.videoDetails.title.replace(/[^\w\s]/gi, ''); // sanitize title
 
-        ytdl(videoURL, { quality: "highest", filter: "audioandvideo"}).pipe(res);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Failed to donwload video "});
-    }
-})
+    res.setHeader('Content-Disposition', `attachment; filename="${title}.mp4"`);
+    res.setHeader('Content-Type', 'video/mp4');
 
-const PORT = 5000
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    ytdl(videoUrl, { format: 'mp4' }).pipe(res);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to download video' });
+  }
+});
+
+const PORT = 5000;
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
