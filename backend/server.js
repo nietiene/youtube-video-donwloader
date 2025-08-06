@@ -19,7 +19,7 @@ app.post('/download', async (req, res) => {
         const title = info.videoDetails.title.replace(/[^\w\s]/gi, "")
         res.header("Content-Disposition", `attachment; filename="${title}.mp4"`)
 
-        ytdl(videoURL, { format: "mp4"}).pipe(res);
+        ytdl(videoURL, { quality: "highestvideo"}).pipe(res);
     } catch (err) {
         res.status(500).json({ error: "Failed to donwload video "})
     }
