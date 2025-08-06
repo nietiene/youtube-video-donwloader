@@ -4,24 +4,26 @@ import ytdl from "ytdl-core"
 
 const app = express()
 
-app.get('/download', async (req, res) => {
-    const videoURL = req.query.url;
+app.use(cors())
+app.use(express.json())
 
-    if (!ytdl.validateURL(videoURL)) {
-        return res.status(400).json({ error: "Invalid Youtube URL" })
+app.post('/download', async (req, res) => {
+    const videoURL = req.body.url
+
+    if (ytdl.validateURL(videoURL)) {
+        return res.status(400).json({ error: "Invalid YouTube URL" })
     }
 
-    const videoID = ytdl.getURLVideoID(videoURL)
-    const info = ytdl.getInfo(videoID)
-    const title = (await info).videoDetails.title
+    try {
+        const info = await ytdl.getInfo(videoURL)
+        const title = info.videoDetails.title.replace(/[^\w\s]/gi, "")
+        res.header("Content-Disposition", `attachment; filename="${title}.mp4"`)
 
-    res.header("Content-Disposition", `attachment; filename=${title}.mp4`)
-
-    ytdl(videoURL, {
-        format: "mp4",
-        quality: "highestvideo",
-    }).pipe(res)
+        ytdl(videoURL, { format: "mp4"}).pipe(res);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to donwload video "})
+    }
 })
 
-const PORT = 500
+const PORT = 5000
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
