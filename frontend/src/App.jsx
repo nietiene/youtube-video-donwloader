@@ -1,53 +1,52 @@
-import { useState, useEffect } from 'react'
-import axios from 'axios'
-import './App.css'
+import { useState } from "react";
+import axios from "axios";
 
 function App() {
-  const [url, setUrl] = useState('')
-  const [downloadUrl, setDownloadUrl] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [videoURL, setVideoURL] = useState("");
+  const [downloading, setDownloading] = useState(false);
 
   const handleDownload = async () => {
-    setLoading(true)
-    try {
-      const res = await axios.post('http://localhost:5000/download', { url })
-      setDownloadUrl(res.data.link)
-    } catch (err) {
-      alert("Failed to fetch download link")
-    }
-    setLoading(false)
-  }
+    if (!videoURL) return alert("Please enter a YouTube URL");
 
-  useEffect(() => {
-    // Insert PropellerAds or other ad script
-    const script = document.createElement('script')
-    script.src = '//upgulpinon.com/1?z=YOUR_AD_ID'
-    script.async = true
-    document.getElementById('ad-container').appendChild(script)
-  }, [])
+    try {
+      setDownloading(true);
+      const response = await axios.post(
+        "http://localhost:5000/download",
+        { videoURL },
+        { responseType: "blob" }
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "video.mp4"; // you can later change this dynamically
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (error) {
+      console.error("Download failed:", error);
+      alert("Failed to download video. Check URL or try again.");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
-    <div className="container">
-      <h1>YouTube Downloader</h1>
+    <div style={{ padding: "2rem" }}>
+      <h1>YouTube Video Downloader</h1>
       <input
         type="text"
-        placeholder="Paste YouTube video URL"
-        value={url}
-        onChange={(e) => setUrl(e.target.value)}
+        placeholder="Paste YouTube URL here"
+        value={videoURL}
+        onChange={(e) => setVideoURL(e.target.value)}
+        style={{ width: "400px", padding: "10px" }}
       />
-      <button onClick={handleDownload} disabled={loading}>
-        {loading ? 'Processing...' : 'Get Download Link'}
+      <br />
+      <button onClick={handleDownload} style={{ marginTop: "1rem" }}>
+        {downloading ? "Downloading..." : "Download"}
       </button>
-
-      {downloadUrl && (
-        <div className="result">
-          <a href={downloadUrl} target="_blank">Download Video</a>
-        </div>
-      )}
-
-      <div id="ad-container" style={{ marginTop: '40px' }}></div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
