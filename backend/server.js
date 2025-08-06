@@ -10,7 +10,7 @@ app.use(express.json())
 app.post('/download', async (req, res) => {
     const videoURL = req.body.url
 
-    if (ytdl.validateURL(videoURL)) {
+    if (!ytdl.validateURL(videoURL)) {
         return res.status(400).json({ error: "Invalid YouTube URL" })
     }
 

@@ -5,7 +5,7 @@ import axios from "axios"
 function App() {
   const [url, setUrl] = useState("")
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!url) return alert("Please enter a valid youtube URL")
 
       try {
@@ -16,7 +16,18 @@ function App() {
           }
         )
 
-        const blob = new Blob([response.data], { type: ""})
+        const blob = new Blob([response.data], { type: "video/mp4" });
+        const downloadUrl = window.URL.createObjectURL(blob)
+        const link = document.createElement("a")
+        link.href = downloadUrl
+        link.download = "video.mp4";
+ 
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+      } catch (error) {
+        console.error("Donwload failed:", error)
+        alert("Failed to donwload video.")
       }
       }
   return (
